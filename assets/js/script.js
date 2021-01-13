@@ -106,13 +106,23 @@ $(".list-group").on("click", "span", function () {
   // swap out elements
   $(this).replaceWith(dateInput);
 
+  // enable jquery ui datepciker
+  dateInput.datepicker({
+    minDate: 1, 
+    onClose: function() {
+      // when calendar is closed, force a "change" event on the `dateInput`
+      $(this).trigger("change");
+    }
+  });
+
   // automatically focus on new element
   dateInput.trigger("focus");
 
 });
 
 // value of due date was changed
-$(".list-group").on("blur", "input[type='text']", function () {
+// note that "change" instead of "blur" allows for the date to be selected and edited with .datepicker()
+$(".list-group").on("change", "input[type='text']", function () {
   // get current text
   var date = $(this)
     .val()
@@ -254,6 +264,11 @@ $("#remove-tasks").on("click", function () {
     $("#list-" + key).empty();
   }
   saveTasks();
+});
+
+// adds the calendar widget to the date-selector modal using jQuery UI
+$("#modalDueDate").datepicker({
+  minDate: 1
 });
 
 // load tasks for the first time
