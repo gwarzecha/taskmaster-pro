@@ -3,9 +3,11 @@ var tasks = {};
 var createTask = function (taskText, taskDate, taskList) {
   // create elements that make up a task item
   var taskLi = $("<li>").addClass("list-group-item");
+
   var taskSpan = $("<span>")
     .addClass("badge badge-primary badge-pill")
     .text(taskDate);
+
   var taskP = $("<p>")
     .addClass("m-1")
     .text(taskText);
@@ -13,6 +15,8 @@ var createTask = function (taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
+  // check due date
+  auditTask(taskLi);
 
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
@@ -150,6 +154,9 @@ $(".list-group").on("change", "input[type='text']", function () {
 
   // replace input with span element
   $(this).replaceWith(taskSpan);
+
+  // Pass task's <li> element into auditTask() to check new due date
+  auditTask($(taskSpan).closest(".list-group-item"));
 });
 
 // turn every element with class list-group into a sortable list
@@ -270,6 +277,36 @@ $("#remove-tasks").on("click", function () {
 $("#modalDueDate").datepicker({
   minDate: 1
 });
+
+var auditTask = function(taskEl) {
+  // get date from task element
+  // select taskEl, find span inside, retrieve text, then cut off leading or trailing spaces
+  var date = $(taskEl).find("span").text().trim();
+
+  // convert to moment object at 5:00pm; "L" refers to local time
+  var time = moment(date, "L").set("hour", 17);
+  
+  // remove any old classes from element
+  $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+
+  // apply new class if task is near/over due date
+  if (moment().isAfter(time)) {
+    // checks if the current date/time are later than that pulled from taskEl
+    //if so, add the class to the element, giving it a red background
+    $(taskEl).addClass("list-group-item-danger");
+  }
+
+  // apply new class if task is near/over due date
+  if (moment().isAfter(time)) {
+    $(taskEl).addClass("list-group-item-danger");
+  }
+
+  //gets the difference between right now and a day in the future; Math.abs gets
+  //the aboluste value as the number would be negative because it's in the future
+  else if (Math.abs(moment().diff(time, "days")) <= 2) {
+    $(taskEl).addClass("list-group-item-warning");
+  }
+};
 
 // load tasks for the first time
 loadTasks();
